@@ -8,6 +8,7 @@ class MatcherViewModel: ObservableObject {
   @Published var resultImage: UIImage?
   @Published var statusMessage: String = ""
   @Published var isReadyToMatch: Bool = false
+  @Published var engineInfo: String = "Engine: Unknown"
 
   private var matcher: XFeatMatcher?
 
@@ -23,6 +24,9 @@ class MatcherViewModel: ObservableObject {
     Task {
       do {
         matcher = try XFeatMatcher()
+        if let m = matcher {
+          engineInfo = m.isUsingCoreML ? "Engine: CoreML (Neural Engine)" : "Engine: CPU"
+        }
         statusMessage = "模型初始化成功"
         loadBuiltInReference()
       } catch {

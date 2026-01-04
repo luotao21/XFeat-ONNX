@@ -4,7 +4,8 @@ import UIKit
 struct ContentView: View {
   @StateObject private var viewModel = MatcherViewModel()
   @State private var showingImagePicker = false
-  @State private var showingCamera = false
+  @State private var showingSourceSelection = false
+  @State private var pickerSourceType: UIImagePickerController.SourceType = .photoLibrary
 
   var body: some View {
     NavigationView {
@@ -61,12 +62,13 @@ struct ContentView: View {
                 }
               }
             }
+            .contentShape(Rectangle())
             .onTapGesture {
               // Show source selection action sheet
               // For simplicity in this demo, default to camera if available, else picker
               // Ideally we show an action sheet.
               // Let's toggle a simple choice via logic or Alert
-              self.showingCamera = true
+              self.showingSourceSelection = true
             }
           }
         }
@@ -85,11 +87,16 @@ struct ContentView: View {
         }
 
         // Status
-        if !viewModel.statusMessage.isEmpty {
-          Text(viewModel.statusMessage)
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
+        VStack(spacing: 4) {
+          if !viewModel.statusMessage.isEmpty {
+            Text(viewModel.statusMessage)
+              .font(.caption)
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.center)
+          }
+          Text(viewModel.engineInfo)
+            .font(.caption2)
+            .foregroundColor(.gray)
         }
 
         // Match Result (Bottom)
@@ -109,24 +116,21 @@ struct ContentView: View {
       }
       .padding()
       .navigationTitle("XFeat ONNX")
-      .actionSheet(isPresented: $showingCamera) {
-        ActionSheet(
-          title: Text("获取目标图像"),
-          buttons: [
-            .default(Text("拍照")) {
-              self.showingImagePicker = true
-              self.showingCamera = true  // Use this flag to indicate camera source in sheets? No, need a cleaner way.
-            },
-            .default(Text("从相册选择")) {
-              self.showingImagePicker = true
-              self.showingCamera = false
-            },
-            .cancel(),
-          ])
+      .confirmationDialog("获取目标图像", isPresented: $showingSourceSelection, titleVisibility: .visible)
+      {
+        Button("拍照") {
+          self.pickerSourceType = .camera
+          self.showingImagePicker = true
+        }
+        Button("从相册选择") {
+          self.pickerSourceType = .photoLibrary
+          self.showingImagePicker = true
+        }
+        Button("取消", role: .cancel) {}
       }
       .sheet(isPresented: $showingImagePicker) {
         ImagePicker(
-          sourceType: showingCamera ? .camera : .photoLibrary,
+          sourceType: pickerSourceType,
           image: Binding(
             get: { nil },
             set: { img in

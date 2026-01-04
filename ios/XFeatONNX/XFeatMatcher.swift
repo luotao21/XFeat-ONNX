@@ -12,6 +12,9 @@ class XFeatMatcher {
   // Model configuration
   private let isDense: Bool = true
 
+  /// Whether CoreML execution provider is enabled
+  public private(set) var isUsingCoreML: Bool = false
+
   /// 匹配结果
   struct MatchResult {
     let refKeypoints: [[Float]]
@@ -65,6 +68,16 @@ class XFeatMatcher {
     // Create session options
     let sessionOptions = try ORTSessionOptions()
     try sessionOptions.setGraphOptimizationLevel(.all)
+    // Try to enable CoreML
+    do {
+      let coreMLOptions = try ORTCoreMLExecutionProviderOptions()
+      try sessionOptions.appendCoreMLExecutionProvider(with: coreMLOptions)
+      print("CoreML Execution Provider enabled")
+      isUsingCoreML = true
+    } catch {
+      print("Failed to enable CoreML Execution Provider: \(error)")
+      isUsingCoreML = false
+    }
 
     // Create sessions
     extractorSession = try ORTSession(
@@ -414,7 +427,22 @@ class XFeatMatcher {
     let scaleTgtX = tgtImage.size.width / modelWidth
     let scaleTgtY = tgtImage.size.height / modelHeight
 
-    for (index, (refPt, tgtPt)) in zip(refPoints, tgtPoints).enumerated() {
+    // Limit number of lines to draw for performance
+    let maxDrawCount = 200
+    let pointsToDraw: [(Int, ([Float], [Float]))]
+
+    if refPoints.count > maxDrawCount {
+      // Sample random points
+      var indicies = Array(0..<refPoints.count)
+      indicies.shuffle()
+      let sampleIndices = indicies.prefix(maxDrawCount)
+      pointsToDraw = sampleIndices.map { ($0, (refPoints[$0], tgtPoints[$0])) }
+    } else {
+      pointsToDraw = Array(zip(refPoints, tgtPoints).enumerated())
+    }
+
+    // for (index, (refPt, tgtPt)) in zip(refPoints, tgtPoints).enumerated() {
+    for (index, (refPt, tgtPt)) in pointsToDraw {
       guard refPt.count >= 2, tgtPt.count >= 2 else { continue }
 
       let color = colors[index % colors.count]
