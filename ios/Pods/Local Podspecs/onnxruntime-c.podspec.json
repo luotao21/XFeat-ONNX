@@ -1,0 +1,27 @@
+{
+  "name": "onnxruntime-c",
+  "version": "1.20.0",
+  "summary": "ONNX Runtime C library",
+  "homepage": "https://onnxruntime.ai",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": "Microsoft",
+  "source": {
+    "path": "."
+  },
+  "platforms": {
+    "ios": "12.0",
+    "osx": "10.15"
+  },
+  "vendored_frameworks": "onnxruntime.xcframework",
+  "module_name": "onnxruntime",
+  "libraries": "c++",
+  "source_files": "include/**/*.h",
+  "header_mappings_dir": "include",
+  "pod_target_xcconfig": {
+    "OTHER_LDFLAGS": "-lc++",
+    "HEADER_SEARCH_PATHS": "$(PODS_EXPORED_INCLUDE_PATHS) $(PODS_ROOT)/../Vendors/onnxruntime-c/include"
+  }
+}

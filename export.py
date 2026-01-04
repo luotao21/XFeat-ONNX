@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--top_k",
         type=int,
-        default=None,
+        default=4096,
         required=False,
         help="Maximum number of keypoints outputted by the extractor.",
     )
@@ -63,7 +63,7 @@ def export_onnx(
     dynamic=False,
     dense=False,
     end2end=False,
-    top_k=None,
+    top_k=4096,
 ):
     # Sample images for tracing
     image0, _ = load_image(img0_path)

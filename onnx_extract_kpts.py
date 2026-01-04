@@ -18,9 +18,9 @@ def main():
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # Create model
-    fname_model = "weights/xfeat.onnx"
+    fname_model = "weights/xfeat_600x800.onnx"
     if dense:
-        fname_model = fname_model.replace(".onnx", "_dense.onnx")
+        fname_model = "weights/xfeat_dense_600x800.onnx"
 
     session = onnxruntime.InferenceSession(fname_model)
     input_names = session.get_inputs()[0].name
